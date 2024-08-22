@@ -1,5 +1,12 @@
-function VideoEncoderView() {
-  return <div>VideoEncoderView</div>;
+function VideoEncoderView(props: { onBack: () => void }) {
+  const { onBack } = props;
+  return (
+    <div>
+      <button className="btn btn-primary" onClick={onBack}>
+        Back
+      </button>
+    </div>
+  );
 }
 
 export default VideoEncoderView;

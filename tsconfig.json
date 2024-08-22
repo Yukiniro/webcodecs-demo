@@ -6,7 +6,8 @@
     "declarationMap": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "module": "ESNext"
   },
   "include": ["src"]
 }
