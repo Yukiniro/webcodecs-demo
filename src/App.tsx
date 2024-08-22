@@ -1,36 +1,44 @@
-import { useState, ChangeEventHandler } from "react";
-import LogoSvg from "./icon/logo.svg?react";
-import FaviconSvg from "./icon/favicon.svg?react";
+import { useState } from "react";
+import Card from "./components/Card";
+import VideoDecoderView from "./components/VideoDecoderView";
+import VideoEncoderView from "./components/VideoEncoderView";
+import AudioDecoderView from "./components/AudioDecoderView";
+import AudioEncoderView from "./components/AudioEncoderView";
+import ImageDecoderView from "./components/ImageDecoderView";
+import ImageEncoderView from "./components/ImageEncoderView";
 
 function App() {
-  const [count, setCount] = useState(0);
-
-  const handleSwapHandle: ChangeEventHandler<HTMLInputElement> = e => {
-    const checked = e.target.checked;
-    const themeDom = document.querySelector("[data-theme]");
-    themeDom.setAttribute("data-theme", checked ? "dark" : "light");
-  };
+  const [entry, setEntry] = useState<string>("");
 
   return (
-    <div className="w-screen h-screen bg-base-100 text-center flex flex-col items-center justify-center">
-      <h1 className="text-6xl font-bold font-mono">React + Vite + daisyUI</h1>
-      <label className="swap swap-flip p-14">
-        <input
-          type="checkbox"
-          onChange={handleSwapHandle}
-          data-toggle-theme="dark,light"
-        />
-        <LogoSvg className="w-40 h-40 swap-on" />
-        <FaviconSvg className="w-40 h-40 swap-off" />
-      </label>
-      <p>
-        <button
-          className="btn btn-primary"
-          onClick={() => setCount(count => count + 1)}
-        >
-          count is: {count}
-        </button>
-      </p>
+    <div className="w-screen h-screen bg-base-100 flex flex-col items-center">
+      <h1 className="text-6xl font-bold font-mono py-24">WebCodecs Demo</h1>
+      {entry === "" && (
+        <div className=" items-center justify-center gap-y-8 gap-x-12 grid grid-cols-2">
+          {[
+            { title: "视频解码", onClick: () => setEntry("video-decode") },
+            { title: "视频编码", onClick: () => setEntry("video-encode") },
+            { title: "音频解码", onClick: () => setEntry("audio-decode") },
+            { title: "音频编码", onClick: () => setEntry("audio-encode") },
+            { title: "图片解码", onClick: () => setEntry("image-decode") },
+            { title: "图片编码", onClick: () => setEntry("image-encode") },
+          ].map(item => {
+            return (
+              <Card
+                key={item.title}
+                title={item.title}
+                onClick={item.onClick}
+              />
+            );
+          })}
+        </div>
+      )}
+      {entry === "video-decode" && <VideoDecoderView />}
+      {entry === "video-encode" && <VideoEncoderView />}
+      {entry === "audio-decode" && <AudioDecoderView />}
+      {entry === "audio-encode" && <AudioEncoderView />}
+      {entry === "image-decode" && <ImageDecoderView />}
+      {entry === "image-encode" && <ImageEncoderView />}
     </div>
   );
 }
