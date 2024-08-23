@@ -9,7 +9,7 @@ function useOnceEffect(effect: () => void) {
       return;
     }
     mounted.current = true;
-    effect();
+    return effect();
   }, []);
 }
 
