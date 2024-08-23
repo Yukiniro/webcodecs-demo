@@ -11,6 +11,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.16
         version: 10.4.16(postcss@8.4.32)
+      bittydash:
+        specifier: ^0.7.1
+        version: 0.7.1
       daisyui:
         specifier: ^4.12.10
         version: 4.12.10(postcss@8.4.32)
@@ -853,6 +856,9 @@ packages:
   binary-extensions@2.2.0:
     resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}
     engines: {node: '>=8'}
+
+  bittydash@0.7.1:
+    resolution: {integrity: sha512-zsrD4PaWzuOc6TIahZaF081DrPTLIwm0s8im2oxU5oqnB2HdKKbMgFJb/AEqfb7sQY7sJC4zwdQSGxxc7shJFQ==}
 
   bplist-parser@0.2.0:
     resolution: {integrity: sha512-z0M+byMThzQmD9NILRniCUXYsYpjwnlO8N5uCFaCqIOpqRsJCrQL9NK3JsD67CN5a08nF5oIL2bD6loTdHOuKw==}
@@ -3325,6 +3331,8 @@ snapshots:
   big-integer@1.6.52: {}
 
   binary-extensions@2.2.0: {}
+
+  bittydash@0.7.1: {}
 
   bplist-parser@0.2.0:
     dependencies:

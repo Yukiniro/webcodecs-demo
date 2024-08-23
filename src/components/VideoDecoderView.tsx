@@ -2,18 +2,16 @@
 import MP4Box from "mp4box";
 import videoUrl from "../assets/bunny.mp4";
 import useOnceEffect from "../hooks/useOnceEffect";
+import { sleep } from "bittydash";
 
 function VideoDecoderView(props: { onBack: () => void }) {
   const { onBack } = props;
 
   useOnceEffect(() => {
-    let width = 0;
-    let height = 0;
-    let samples = [];
-    let sampleCounts = 0;
-    let frameRate = 0;
+    let videoInfo = null;
+    const videoSamples = [];
 
-    const decodeVideo = async samples => {
+    const decodeVideo = async videoSamples => {
       const videoDecoder = new VideoDecoder({
         error: (e: unknown) => {
           console.error(e);
@@ -22,6 +20,24 @@ function VideoDecoderView(props: { onBack: () => void }) {
           console.log(vf);
         },
       });
+
+      const { track_width, track_height, codec, timescale } =
+        videoInfo.videoTracks[0];
+      videoDecoder.configure({
+        codedWidth: track_width,
+        codedHeight: track_height,
+        codec,
+      });
+
+      while (videoSamples.length > 0) {
+        if (videoDecoder.decodeQueueSize > 20) {
+          await sleep(50);
+          continue;
+        }
+        const sample = videoSamples.shift();
+        const { dts, cts, timescale, data, duration } = sample;
+        videoDecoder.decode(sample);
+      }
     };
 
     const mp4box = MP4Box.createFile();
@@ -30,18 +46,15 @@ function VideoDecoderView(props: { onBack: () => void }) {
     };
     mp4box.onReady = info => {
       console.log("mp4box ready", info);
+      videoInfo = info;
       const videoTrack = info.videoTracks[0];
-      const { track_width, track_height, id, nb_samples } = videoTrack;
-      sampleCounts = nb_samples;
-      width = track_width;
-      height = track_height;
-      mp4box.setExtractionOptions(id);
+      mp4box.setExtractionOptions(videoTrack.id);
       mp4box.start();
     };
     mp4box.onSamples = (id, user, samples) => {
-      samples.push(...samples);
-      if (samples.length === sampleCounts) {
-        decodeVideo(samples);
+      videoSamples.push(...samples);
+      if (videoSamples.length === videoInfo.videoTracks[0].nb_samples) {
+        decodeVideo(videoSamples);
       }
     };
 
@@ -52,10 +65,9 @@ function VideoDecoderView(props: { onBack: () => void }) {
         // @ts-expect-error
         buffer.fileStart = 0;
         mp4box.appendBuffer(buffer);
-        // mp4box.start();
       })
       .finally(() => {
-        // mp4box.flush();
+        mp4box.flush();
       });
   });
 
