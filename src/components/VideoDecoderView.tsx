@@ -58,12 +58,14 @@ function VideoDecoderView() {
         pickAndRender(0);
       });
 
-      videoDecoder.configure({
+      const videoConfig = {
         codedWidth: track_width,
         codedHeight: track_height,
         description: desc,
         codec,
-      });
+      };
+      await VideoDecoder.isConfigSupported(videoConfig);
+      videoDecoder.configure(videoConfig);
 
       const delta = videoSamples[0].dts;
       while (videoSamples.length > 0) {
