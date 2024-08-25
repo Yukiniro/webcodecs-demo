@@ -26,20 +26,37 @@ function VideoDecoderView() {
         },
       });
 
-      const { track_width, track_height, codec, timescale, duration, id } =
+      const { track_width, track_height, codec, timescale, id } =
         videoInfo.videoTracks[0];
       const desc = parseVideoCodecDesc(mp4box.getTrackById(id)).buffer;
-      const step = duration / timescale / videoSamples.length;
+      let startTime = -1;
 
-      setInterval(() => {
-        const vf = videoFrames.shift();
-        if (!vf) return;
-        // console.log(vf.timestamp);
-        canvasRef.current!.width = vf.displayWidth;
-        canvasRef.current!.height = vf.displayHeight;
-        canvasRef.current?.getContext("2d")?.drawImage(vf, 0, 0);
-        vf.close();
-      }, step * 1e3);
+      const pickAndRender = (time: number) => {
+        const showTime = time * 1e3;
+        const frameIndex = videoFrames.findIndex(
+          (vf: VideoFrame) =>
+            vf.timestamp <= showTime &&
+            vf.timestamp + (vf.duration ?? 0) > showTime,
+        );
+
+        if (frameIndex !== -1) {
+          const vf = videoFrames[frameIndex];
+          canvasRef.current!.width = vf.displayWidth;
+          canvasRef.current!.height = vf.displayHeight;
+          canvasRef.current?.getContext("2d")?.drawImage(vf, 0, 0);
+          const removed = videoFrames.splice(0, frameIndex + 1);
+          removed.forEach(vf => vf.close());
+        }
+
+        requestAnimationFrame((timestamp: number) => {
+          pickAndRender(timestamp - startTime);
+        });
+      };
+
+      requestAnimationFrame((timestamp: number) => {
+        startTime = timestamp;
+        pickAndRender(0);
+      });
 
       videoDecoder.configure({
         codedWidth: track_width,
@@ -48,6 +65,7 @@ function VideoDecoderView() {
         codec,
       });
 
+      const delta = videoSamples[0].dts;
       while (videoSamples.length > 0) {
         if (videoDecoder.decodeQueueSize > 20 || videoFrames.length > 30) {
           await sleep(50);
@@ -56,7 +74,7 @@ function VideoDecoderView() {
         const sample = videoSamples.shift();
         const chunk = new EncodedVideoChunk({
           type: sample.is_sync ? "key" : "delta",
-          timestamp: (sample.dts / timescale) * 1e6,
+          timestamp: ((sample.cts - delta) / timescale) * 1e6,
           duration: (sample.duration / timescale) * 1e6,
           data: sample.data,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
