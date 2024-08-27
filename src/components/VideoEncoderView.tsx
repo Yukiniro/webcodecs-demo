@@ -44,26 +44,37 @@ function VideoEncoderView() {
         width,
         height,
         nb_samples: totalFrames,
-        codec: "avc1.42E032",
+        codec: "avc1.42001E",
         brands: ["isom", "iso2", "avc1", "mp42", "mp41"],
       };
-      const trackId = mp4box.addTrack(trackOptions);
+
+      let trackId = null;
+      // const trackId = mp4box.addTrack(trackOptions);
 
       const videoConfig = {
         width,
         height,
-        codec: "avc1.42E032",
+        codec: "avc1.42001E",
         bitrate: 1000000,
         framerate: fps,
         alpha: "discard",
-        avc: { format: "annexb" },
+        
+        // https://github.com/gpac/mp4box.js/issues/243
+        avc: { format: "avc" },
       };
       await VideoEncoder.isConfigSupported(videoConfig as VideoEncoderConfig);
       const encoder = new VideoEncoder({
         error: e => {
           console.error(e);
         },
-        output: chunk => {
+        output: (chunk, config) => {
+          if (trackId === null) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            trackOptions.avcDecoderConfigRecord =
+              config?.decoderConfig.description;
+            trackId = mp4box.addTrack(trackOptions);
+          }
           const buf = new ArrayBuffer(chunk.byteLength);
           chunk.copyTo(buf);
           mp4box.addSample(trackId, buf, {
