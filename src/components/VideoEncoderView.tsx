@@ -47,7 +47,7 @@ function VideoEncoderView() {
         codec: "avc1.42E032",
         brands: ["isom", "iso2", "avc1", "mp42", "mp41"],
       };
-      let trackId = null;
+      const trackId = mp4box.addTrack(trackOptions);
 
       const videoConfig = {
         width,
@@ -56,24 +56,14 @@ function VideoEncoderView() {
         bitrate: 1000000,
         framerate: fps,
         alpha: "discard",
-        avc: { format: "avc" },
+        avc: { format: "annexb" },
       };
       await VideoEncoder.isConfigSupported(videoConfig as VideoEncoderConfig);
       const encoder = new VideoEncoder({
         error: e => {
           console.error(e);
         },
-        output: (chunk, metadata) => {
-          if (trackId === null && metadata) {
-            const desc = metadata.decoderConfig?.description as ArrayBuffer;
-            const u8 = new Uint8Array(desc);
-            const constraintSetFlag = u8[2];
-            if (constraintSetFlag.toString(2).slice(-2).includes("1")) {
-              u8[2] = 0;
-            }
-            mp4box.avcDecoderConfigRecord = u8;
-            trackId = mp4box.addTrack(trackOptions);
-          }
+        output: chunk => {
           const buf = new ArrayBuffer(chunk.byteLength);
           chunk.copyTo(buf);
           mp4box.addSample(trackId, buf, {
