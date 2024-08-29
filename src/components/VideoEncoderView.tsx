@@ -131,15 +131,13 @@ function VideoEncoderView() {
         }
 
         ctx.drawImage(video, 0, 0, width, height);
-        const bitmap = await createImageBitmap(canvas);
-        const videoFrame = new VideoFrame(bitmap, {
+        const videoFrame = new VideoFrame(canvas, {
           timestamp: time * 1e6,
           duration: (1 / fps) * 1e6,
         });
         encodeCount++;
         encoder.encode(videoFrame, { keyFrame: encodeCount % GOP === 0 });
         videoFrame.close();
-        bitmap.close();
       }
     })();
   });
